@@ -75,12 +75,16 @@ CREATE TABLE envia_mensagem (
     Hora TIME,
     Conteudo VARCHAR(500)
 );
-
+CREATE TABLE Responsavel (
+	Nome VARCHAR(45),
+    Sobrenome VARCHAR(45),
+    DataDeNascimento DATE,
+    CPF VARCHAR(11) PRIMARY KEY
+);
 CREATE TABLE e_responsavel_por (
-    fk_Paciente_CPF VARCHAR(11),
-    fk_Medico_CPF VARCHAR(11),
-    fk_Cuidador_CPF VARCHAR(11),
-    fk_Paciente_CPF_ VARCHAR(11)
+	fk_Responsavel_CPF VARCHAR(11),
+    fk_Paciente_CPF VARCHAR(11)
+    
 );
 
 CREATE TABLE Cuida (
@@ -164,25 +168,19 @@ ALTER TABLE envia_mensagem ADD CONSTRAINT FK_envia_mensagem_4
     REFERENCES Forum (id_chat)
     ON DELETE SET NULL;
  
+
+
 ALTER TABLE e_responsavel_por ADD CONSTRAINT FK_e_responsavel_por_1
-    FOREIGN KEY (fk_Paciente_CPF_)
-    REFERENCES Paciente (CPF)
-    ON DELETE SET NULL;
- 
+    FOREIGN KEY (fk_Responsavel_CPF)
+    REFERENCES Responsavel (CPF)
+    
+    ON DELETE SET NULL; 
+
 ALTER TABLE e_responsavel_por ADD CONSTRAINT FK_e_responsavel_por_2
     FOREIGN KEY (fk_Paciente_CPF)
     REFERENCES Paciente (CPF)
     ON DELETE RESTRICT;
- 
-ALTER TABLE e_responsavel_por ADD CONSTRAINT FK_e_responsavel_por_3
-    FOREIGN KEY (fk_Medico_CPF)
-    REFERENCES Medico (CPF)
-    ON DELETE SET NULL;
- 
-ALTER TABLE e_responsavel_por ADD CONSTRAINT FK_e_responsavel_por_4
-    FOREIGN KEY (fk_Cuidador_CPF)
-    REFERENCES Cuidador (CPF)
-    ON DELETE SET NULL;
+
  
 ALTER TABLE Cuida ADD CONSTRAINT FK_Cuida_1
     FOREIGN KEY (fk_Paciente_CPF)
@@ -224,7 +222,8 @@ ALTER TABLE tem ADD CONSTRAINT FK_tem_1
     REFERENCES Cuidador (CPF)
     ON DELETE RESTRICT;
 /* Inserção de Usuarios */
-	/* Inserção de Pacientes*/
+	
+    /* Inserção de Pacientes*/
 		INSERT INTO paciente (DescricaoDeNecessidades, DataDeNascimento, Nome, CPF)
 		VALUES ('Necessita de fisioterapia', '1935-08-23', 'Maria Oliveira', '23456789012');
 
@@ -242,7 +241,8 @@ ALTER TABLE tem ADD CONSTRAINT FK_tem_1
 
 		INSERT INTO paciente (DescricaoDeNecessidades, DataDeNascimento, Nome, CPF)
 		VALUES ('Necessita de monitoramento cardíaco', '1941-12-05', 'José Alves', '78901234567');
-	/*Incerção de Cuidadores*/
+	
+    /*Incerção de Cuidadores*/
 		INSERT INTO cuidador (TipoContrato, Periodo, genero, DataDeNascimento, Nome, Sobrenome, CPF)
 		VALUES ('CLT', 'Manhã', 'Feminino', '1985-03-22', 'Carla', 'Souza', '12345678123');
 
@@ -260,16 +260,67 @@ ALTER TABLE tem ADD CONSTRAINT FK_tem_1
 
 		INSERT INTO cuidador (TipoContrato, Periodo, genero, DataDeNascimento, Nome, Sobrenome, CPF)
 		VALUES ('Autônomo', 'Noite', 'Masculino', '1992-12-05', 'Gabriel', 'Pereira', '67890123123');
-	/* Incerção de cuidados */
+	
+    /* Incerção de cuidados */
 		INSERT INTO Cuida(fk_Paciente_CPF, fk_Cuidador_CPF) values  ('23456789012','56789012123');
 		INSERT INTO Cuida(fk_Paciente_CPF, fk_Cuidador_CPF) values  ('56789012345', '45678901123');    
 		INSERT INTO Cuida(fk_Paciente_CPF, fk_Cuidador_CPF) values ('34567890123', '67890123123');
+	
+    /* Inserção de medicos */    
+		INSERT INTO medico (CRM, Especialidades, DataDeNascimento, Nome, Sobrenome, CPF)
+		VALUES ('123456', 'Cardiologia', '1970-02-15', 'João', 'Silva', '14445678901');
+
+		INSERT INTO medico (CRM, Especialidades, DataDeNascimento, Nome, Sobrenome, CPF)
+		VALUES ('789012', 'Neurologia', '1980-07-22', 'Maria', 'Oliveira', '24456789012');
+
+		INSERT INTO medico (CRM, Especialidades, DataDeNascimento, Nome, Sobrenome, CPF)
+		VALUES ('345678', 'Ortopedia', '1975-05-30', 'Carlos', 'Lima', '34467890123');
+
+		INSERT INTO medico (CRM, Especialidades, DataDeNascimento, Nome, Sobrenome, CPF)
+		VALUES ('901234', 'Pediatria', '1985-11-12', 'Ana', 'Pereira', '44478901234');
+
+		INSERT INTO medico (CRM, Especialidades, DataDeNascimento, Nome, Sobrenome, CPF)
+		VALUES ('567890', 'Dermatologia', '1990-03-18', 'Lucas', 'Almeida', '54489012345');
+
+		INSERT INTO medico (CRM, Especialidades, DataDeNascimento, Nome, Sobrenome, CPF)
+		VALUES ('123789', 'Ginecologia', '1982-09-25', 'Fernanda', 'Santos', '64490123456');
+	
+    /* Inserção trata */
+		INSERT INTO trata (fk_Paciente_CPF, fk_Medico_CPF) VALUES ('56789012345', '64490123456');
+		INSERT INTO trata (fk_Paciente_CPF, fk_Medico_CPF) VALUES('78901234567', '14445678901');
+        INSERT INTO trata (fk_Paciente_CPF, fk_Medico_CPF) VALUES('45678901234', '24456789012');
+	
+    /* Inserção medicação */
+		INSERT INTO medicamentos (idMedicacao, Tipo, NomeMedicacao, Laboratorio)
+		VALUES (1, 'Analgésico', 'Paracetamol', 'Laboratório A');
+
+		INSERT INTO medicamentos (idMedicacao, Tipo, NomeMedicacao, Laboratorio)
+		VALUES (2, 'Antibiótico', 'Amoxicilina', 'Laboratório B');
+
+		INSERT INTO medicamentos (idMedicacao, Tipo, NomeMedicacao, Laboratorio)
+		VALUES (3, 'Anti-inflamatório', 'Ibuprofeno', 'Laboratório C');
+
+		INSERT INTO medicamentos (idMedicacao, Tipo, NomeMedicacao, Laboratorio)
+		VALUES (4, 'Antipirético', 'Dipirona', 'Laboratório D');
+
+		INSERT INTO medicamentos (idMedicacao, Tipo, NomeMedicacao, Laboratorio)
+		VALUES (5, 'Antialérgico', 'Loratadina', 'Laboratório E');
+
+		INSERT INTO medicamentos (idMedicacao, Tipo, NomeMedicacao, Laboratorio)
+		VALUES (6, 'Antifúngico', 'Fluconazol', 'Laboratório F');
+	
+    /* Inserções Responsaveis */
+		INSERT INTO Responsavel (Nome, Sobrenome, CPF, DataDeNascimento) VALUES('Gabriel', 'Azevedo', '45682971634', '1998-05-02');
+		INSERT INTO Responsavel (Nome, Sobrenome, CPF, DataDeNascimento) VALUES('Adriana', 'Souza', '65878914763', '1999-06-13');
+
 
 /* Script de consultas */
+
 	SELECT * FROM cuidador;
 	SELECT * FROM paciente;
 	SELECT * FROM medico;
-
+    SELECT * FROM responsavel;
+	SELECT * FROM medicamentos;
 
 /* views */
 	CREATE VIEW CuidadosAgendados AS
@@ -286,6 +337,7 @@ ALTER TABLE tem ADD CONSTRAINT FK_tem_1
 		JOIN paciente
 		on Cuida.fk_Paciente_CPF = paciente.CPF;
 
+-- Testando
 	SELECT * FROM CuidadosAgendados;
 
 /* Stored Procedure */
@@ -309,8 +361,34 @@ ALTER TABLE tem ADD CONSTRAINT FK_tem_1
     
     END $$
     DELIMITER ;
+ 
  -- testando 
     set @idade =0;
     select DataDeNascimento into @DataParametro from paciente where CPF = '78901234567';
     call CalcularIdade(@DataParametro, @idade); 
     select @idade as 'calculo';
+    
+    /* Function */
+    DELIMITER $$
+    CREATE FUNCTION FormataCPF(CPF VARCHAR(11)) RETURNS VARCHAR(15) 
+    DETERMINISTIC
+    BEGIN
+    DECLARE CPFformatado VARCHAR(15);
+    SET CPFformatado = CONCAT(
+    SUBSTRING(CPF, 1, 3), '.',
+    SUBSTRING(CPF, 4, 3), '.',
+    SUBSTRING(CPF, 7, 3), '-',
+    SUBSTRING(CPF, 10, 2)
+    );
+    RETURN CPFformatado;
+    END $$
+    DELIMITER ;
+
+    -- Testando 
+    select FormataCPF(CPF) from paciente;
+    
+    
+/*Trigger*/
+	
+    
+    
