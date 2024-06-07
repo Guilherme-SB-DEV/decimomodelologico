@@ -389,6 +389,27 @@ ALTER TABLE tem ADD CONSTRAINT FK_tem_1
     
     
 /*Trigger*/
-	
+use banco2;
+DELIMITER $$
+CREATE TRIGGER trigger1 BEFORE INSERT
+ON forum
+FOR EACH ROW
+ BEGIN
+	DECLARE usuario_pertence INT;
+
+    -- Verifica se o usuário existe na tabela valid_users
     
+    SELECT COUNT(*) INTO usuario_pertence
+    FROM tem_participacao
+    WHERE fk_Medico_CPF = NEW.fk_Medico_CPF OR fk_Cuidador_CPF = NEW.fk_Cuidador_CPF OR fk_Paciente_CPF = NEW.fk_Paciente_CPF;
+    
+    IF usuario_pertence = 0 THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Usuário não autorizado.';
+    END IF;
+ END;
+$$
+
+insert into tem_participacao(fk_Medico_CPF) VALUES('64490123456');
+insert into forum(id_chat, fk_Medico_CPF) VALUES(2, '64490123454');
+
     
