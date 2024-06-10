@@ -1,10 +1,10 @@
-/* decimo_logico: */
 /* Script de criação */
-CREATE SCHEMA Banco2;
-USE Banco2;
+CREATE SCHEMA Banco;
+USE Banco;
+
 CREATE TABLE Forum (
     Horario TIME,
-    id_chat INT PRIMARY KEY,
+    id_forum INT PRIMARY KEY,
     Data DATE,
     Assunto VARCHAR(100),
     Descricao VARCHAR(500),
@@ -63,14 +63,14 @@ CREATE TABLE Tem_participacao (
     fk_Medico_CPF VARCHAR(11),
     fk_Cuidador_CPF VARCHAR(11),
     fk_Paciente_CPF VARCHAR(11),
-    fk_Forum_id_chat INT
+    fk_Forum_id_forum INT
 );
 
 CREATE TABLE envia_mensagem (
     fk_Medico_CPF VARCHAR(11),
     fk_Cuidador_CPF VARCHAR(11),
     fk_Paciente_CPF VARCHAR(11),
-    fk_Forum_id_chat INT,
+    fk_Forum_id_forum INT,
     Data DATE,
     Hora TIME,
     Conteudo VARCHAR(500)
@@ -144,8 +144,8 @@ ALTER TABLE Tem_participacao ADD CONSTRAINT FK_Tem_participacao_3
     ON DELETE RESTRICT;
  
 ALTER TABLE Tem_participacao ADD CONSTRAINT FK_Tem_participacao_4
-    FOREIGN KEY (fk_Forum_id_chat)
-    REFERENCES Forum (id_chat)
+    FOREIGN KEY (fk_Forum_id_forum)
+    REFERENCES Forum (id_forum)
     ON DELETE SET NULL;
  
 ALTER TABLE envia_mensagem ADD CONSTRAINT FK_envia_mensagem_1
@@ -164,8 +164,8 @@ ALTER TABLE envia_mensagem ADD CONSTRAINT FK_envia_mensagem_3
     ON DELETE RESTRICT;
  
 ALTER TABLE envia_mensagem ADD CONSTRAINT FK_envia_mensagem_4
-    FOREIGN KEY (fk_Forum_id_chat)
-    REFERENCES Forum (id_chat)
+    FOREIGN KEY (fk_Forum_id_forum)
+    REFERENCES Forum (id_forum)
     ON DELETE SET NULL;
  
 
@@ -221,6 +221,7 @@ ALTER TABLE tem ADD CONSTRAINT FK_tem_1
     FOREIGN KEY (fk_Cuidador_CPF)
     REFERENCES Cuidador (CPF)
     ON DELETE RESTRICT;
+    
 /* Inserção de Usuarios */
 	
     /* Inserção de Pacientes*/
@@ -261,11 +262,7 @@ ALTER TABLE tem ADD CONSTRAINT FK_tem_1
 		INSERT INTO cuidador (TipoContrato, Periodo, genero, DataDeNascimento, Nome, Sobrenome, CPF)
 		VALUES ('Autônomo', 'Noite', 'Masculino', '1992-12-05', 'Gabriel', 'Pereira', '67890123123');
 	
-    /* Incerção de cuidados */
-		INSERT INTO Cuida(fk_Paciente_CPF, fk_Cuidador_CPF) values  ('23456789012','56789012123');
-		INSERT INTO Cuida(fk_Paciente_CPF, fk_Cuidador_CPF) values  ('56789012345', '45678901123');    
-		INSERT INTO Cuida(fk_Paciente_CPF, fk_Cuidador_CPF) values ('34567890123', '67890123123');
-	
+    
     /* Inserção de medicos */    
 		INSERT INTO medico (CRM, Especialidades, DataDeNascimento, Nome, Sobrenome, CPF)
 		VALUES ('123456', 'Cardiologia', '1970-02-15', 'João', 'Silva', '14445678901');
@@ -285,11 +282,7 @@ ALTER TABLE tem ADD CONSTRAINT FK_tem_1
 		INSERT INTO medico (CRM, Especialidades, DataDeNascimento, Nome, Sobrenome, CPF)
 		VALUES ('123789', 'Ginecologia', '1982-09-25', 'Fernanda', 'Santos', '64490123456');
 	
-    /* Inserção trata */
-		INSERT INTO trata (fk_Paciente_CPF, fk_Medico_CPF) VALUES ('56789012345', '64490123456');
-		INSERT INTO trata (fk_Paciente_CPF, fk_Medico_CPF) VALUES('78901234567', '14445678901');
-        INSERT INTO trata (fk_Paciente_CPF, fk_Medico_CPF) VALUES('45678901234', '24456789012');
-	
+   
     /* Inserção medicação */
 		INSERT INTO medicacao (idMedicacao, Tipo, NomeMedicacao, Laboratorio)
 		VALUES (1, 'Analgésico', 'Paracetamol', 'Laboratório A');
@@ -312,7 +305,17 @@ ALTER TABLE tem ADD CONSTRAINT FK_tem_1
     /* Inserções Responsaveis */
 		INSERT INTO Responsavel (Nome, Sobrenome, CPF, DataDeNascimento) VALUES('Gabriel', 'Azevedo', '45682971634', '1998-05-02');
 		INSERT INTO Responsavel (Nome, Sobrenome, CPF, DataDeNascimento) VALUES('Adriana', 'Souza', '65878914763', '1999-06-13');
-
+        
+	/* Inserções Cuidados */
+		INSERT INTO Cuida(fk_Paciente_CPF, fk_Cuidador_CPF) values  ('23456789012','56789012123');
+		INSERT INTO Cuida(fk_Paciente_CPF, fk_Cuidador_CPF) values  ('56789012345', '45678901123');    
+		INSERT INTO Cuida(fk_Paciente_CPF, fk_Cuidador_CPF) values ('34567890123', '67890123123');
+        
+	/* Inserção trata */
+		INSERT INTO trata (fk_Paciente_CPF, fk_Medico_CPF) VALUES ('56789012345', '64490123456');
+		INSERT INTO trata (fk_Paciente_CPF, fk_Medico_CPF) VALUES('78901234567', '14445678901');
+        INSERT INTO trata (fk_Paciente_CPF, fk_Medico_CPF) VALUES('45678901234', '24456789012');
+	
 
 /* Script de consultas */
 
@@ -321,6 +324,13 @@ ALTER TABLE tem ADD CONSTRAINT FK_tem_1
 	SELECT * FROM medico;
     SELECT * FROM responsavel;
 	SELECT * FROM medicacao;
+    
+  	SELECT * FROM paciente WHERE CPF LIKE "%CPF%";
+	SELECT * FROM medico WHERE CPF LIKE "%CPF%";
+	SELECT * FROM cuidador WHERE CPF LIKE "%CPF%";
+    
+    SELECT * FROM medicacao WHERE idMedicacao=?;
+    
 
 /* views */
 	CREATE VIEW CuidadosAgendados AS
@@ -388,28 +398,37 @@ ALTER TABLE tem ADD CONSTRAINT FK_tem_1
     select FormataCPF(CPF) from paciente;
     
     
-/*Trigger*/
-use banco2;
-DELIMITER $$
-CREATE TRIGGER trigger1 BEFORE INSERT
-ON forum
-FOR EACH ROW
- BEGIN
-	DECLARE usuario_pertence INT;
-
-    -- Verifica se o usuário existe na tabela valid_users
+	/*Trigger*/
     
-    SELECT COUNT(*) INTO usuario_pertence
-    FROM tem_participacao
-    WHERE fk_Medico_CPF = NEW.fk_Medico_CPF OR fk_Cuidador_CPF = NEW.fk_Cuidador_CPF OR fk_Paciente_CPF = NEW.fk_Paciente_CPF;
+	DELIMITER //
+	CREATE TRIGGER AutorizacaoChat BEFORE INSERT
+	ON envia_mensagem
+	FOR EACH ROW
+	 BEGIN
+		DECLARE usuario_pertence INT;
+
+		-- Verifica se o usuário existe na tabela valid_users
+		
+		SELECT COUNT(*) INTO usuario_pertence
+		FROM tem_participacao
+		WHERE fk_Medico_CPF = NEW.fk_Medico_CPF OR fk_Cuidador_CPF = NEW.fk_Cuidador_CPF OR fk_Paciente_CPF = NEW.fk_Paciente_CPF;
+		
+		IF usuario_pertence = 0 THEN
+			SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Usuário não autorizado.';
+		END IF;
+	 END;
+	//
+	-- testando 
     
-    IF usuario_pertence = 0 THEN
-        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Usuário não autorizado.';
-    END IF;
- END;
-$$
+    INSERT INTO forum(id_forum, Data, Assunto, Descricao, fk_Medico_CPF) VALUES(2, CURDATE(), 'falta de Medicamentos', 'medicamentos', '64490123456');// -- cria forum
+    
+	INSERT INTO tem_participacao(fk_Medico_CPF) VALUES('64490123456');// -- insere participante
+    INSERT INTO envia_mensagem(fk_Medico_CPF, Data, Hora, Conteudo)VALUES('64490123456', CURDATE(), CURTIME(), 'Bom dia!');// -- envia mensagem
+    
+    INSERT INTO tem_participacao(fk_Paciente_CPF)VALUES('34567890123');// -- insere participante
+    INSERT INTO envia_mensagem(fk_Paciente_CPF, Data, Hora, Conteudo)VALUES('34567890123', CURDATE(), CURTIME(), 'Bom dia!');// -- envia mensagem
+    
+    select * from envia_mensagem;//
 
-insert into tem_participacao(fk_Medico_CPF) VALUES('64490123456');
-insert into forum(id_chat, fk_Medico_CPF) VALUES(2, '64490123454');
-
+	
     
