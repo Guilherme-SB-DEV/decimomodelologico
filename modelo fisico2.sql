@@ -399,7 +399,6 @@ ALTER TABLE tem ADD CONSTRAINT FK_tem_1
     
     
 	/*Trigger*/
-    
 	DELIMITER //
 	CREATE TRIGGER AutorizacaoChat BEFORE INSERT
 	ON envia_mensagem
@@ -417,18 +416,18 @@ ALTER TABLE tem ADD CONSTRAINT FK_tem_1
 			SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Usuário não autorizado.';
 		END IF;
 	 END;
-	//
+//
+    DELIMITER ;
 	-- testando 
+    INSERT INTO forum(id_forum, Data, Assunto, Descricao, fk_Medico_CPF) VALUES(2, CURDATE(), 'falta de Medicamentos', 'medicamentos', '64490123456'); -- cria forum
     
-    INSERT INTO forum(id_forum, Data, Assunto, Descricao, fk_Medico_CPF) VALUES(2, CURDATE(), 'falta de Medicamentos', 'medicamentos', '64490123456');// -- cria forum
+	INSERT INTO tem_participacao(fk_Medico_CPF) VALUES('64490123456'); -- insere participante
+    INSERT INTO envia_mensagem(fk_Medico_CPF, Data, Hora, Conteudo)VALUES('64490123456', CURDATE(), CURTIME(), 'Bom dia!'); -- envia mensagem
     
-	INSERT INTO tem_participacao(fk_Medico_CPF) VALUES('64490123456');// -- insere participante
-    INSERT INTO envia_mensagem(fk_Medico_CPF, Data, Hora, Conteudo)VALUES('64490123456', CURDATE(), CURTIME(), 'Bom dia!');// -- envia mensagem
+    INSERT INTO tem_participacao(fk_Paciente_CPF)VALUES('34567890123'); -- insere participante
+    INSERT INTO envia_mensagem(fk_Paciente_CPF, Data, Hora, Conteudo)VALUES('34567890123', CURDATE(), CURTIME(), 'Bom dia!'); -- envia mensagem
     
-    INSERT INTO tem_participacao(fk_Paciente_CPF)VALUES('34567890123');// -- insere participante
-    INSERT INTO envia_mensagem(fk_Paciente_CPF, Data, Hora, Conteudo)VALUES('34567890123', CURDATE(), CURTIME(), 'Bom dia!');// -- envia mensagem
-    
-    select * from envia_mensagem;//
+    select * from envia_mensagem;
 
 	
     
